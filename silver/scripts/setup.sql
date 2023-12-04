@@ -32,132 +32,30 @@ create or alter versioned schema config_code;
     grant usage on procedure config_code.register_single_callback(string, string, string)
         to application role app_public;
 
--- stage schema
-create schema if not exists static;
+-- access to other layers
+create or alter versioned schema bronze;
 
-    grant usage on schema static to application role app_public;
+    create view bronze.daily_market
+    as select * from brokerage_silver_package.shared_bronze.daily_market;
 
-    -- static tables
-    create table if not exists static.STATUS_TYPE (
-        ST_ID VARCHAR,
-        ST_NAME VARCHAR
-    );
-    insert into static.status_type values ('ACTV','Active');
-    insert into static.status_type values ('CMPT','Completed');
-    insert into static.status_type values ('CNCL','Canceled');
-    insert into static.status_type values ('PNDG','Pending');
-    insert into static.status_type values ('SBMT','Submitted');
-    insert into static.status_type values ('INAC','Inactive');
+    create view bronze.company
+    as select * from brokerage_silver_package.shared_bronze.company;
 
-    create or replace TABLE static.INDUSTRY (
-        IN_ID VARCHAR,
-        IN_NAME VARCHAR,
-        IN_SC_ID VARCHAR
-    );
-    insert into static.industry values ('AA','Misc. Capital Goods','FN');
-    insert into static.industry values ('AC','Retail (Drugs)','TC');
-    insert into static.industry values ('AD','Schools','FN');
-    insert into static.industry values ('AE','Casinos & Gaming','CC');
-    insert into static.industry values ('AM','Aerospace & Defense','BM');
-    insert into static.industry values ('AP','Motion Pictures','SV');
-    insert into static.industry values ('AR','Food Processing','HC');
-    insert into static.industry values ('AT','Retail (Grocery)','BM');
-    insert into static.industry values ('AV','Photography','TC');
-    insert into static.industry values ('BA','Schools','BM');
-    insert into static.industry values ('BC','Airline','TC');
-    insert into static.industry values ('BD','Furniture & Fixtures','UT');
-    insert into static.industry values ('BN','Computer Networks','FN');
-    insert into static.industry values ('BS','Major Drugs','HC');
-    insert into static.industry values ('CA','Healthcare Facilities','TR');
-    insert into static.industry values ('CC','Railroads','TC');
-    insert into static.industry values ('CD','Constr. - Supplies & Fixtures','SV');
-    insert into static.industry values ('CE','Construction Services','TC');
-    insert into static.industry values ('CF','Air Courier','CN');
-    insert into static.industry values ('CG','Metal Mining','SV');
-    insert into static.industry values ('CH','Fish/Livestock','FN');
-    insert into static.industry values ('CK','Chemical Manufacturing','SV');
-    insert into static.industry values ('CL','Computer Storage Devices','TR');
-    insert into static.industry values ('CM','Constr. - Supplies & Fixtures','FN');
-    insert into static.industry values ('CN','Printing & Publishing','TC');
-    insert into static.industry values ('CO','Office Supplies','TR');
-    insert into static.industry values ('CP','Metal Mining','SV');
-    insert into static.industry values ('CR','Major Drugs','TC');
-    insert into static.industry values ('CS','Real Estate Operations','SV');
-    insert into static.industry values ('CT','S&Ls/Savings Banks','CC');
-    insert into static.industry values ('CU','Auto & Truck Manufacturers','TC');
-    insert into static.industry values ('CV','Natural Gas Utilities','SV');
-    insert into static.industry values ('CX','Trucking','TC');
-    insert into static.industry values ('DD','Construction Services','TR');
-    insert into static.industry values ('DR','Biotechnology & Drugs','SV');
-    insert into static.industry values ('EI','Retail (Grocery)','SV');
-    insert into static.industry values ('EU','Retail (Catalog & Mail Order)','BM');
-    insert into static.industry values ('FF','Beverages (Non-Alcoholic)','BM');
-    insert into static.industry values ('FL','Retail (Catalog & Mail Order)','CN');
-    insert into static.industry values ('FO','Computer Hardware','FN');
-    insert into static.industry values ('FP','Crops','TC');
-    insert into static.industry values ('FR','Money Center Banks','HC');
-    insert into static.industry values ('FW','Conglomerates','CC');
-    insert into static.industry values ('GR','Natural Gas Utilities','SV');
-    insert into static.industry values ('GS','Auto & Truck Parts','TR');
-    insert into static.industry values ('HF','Retail (Grocery)','EN');
-    insert into static.industry values ('HI','Furniture & Fixtures','EN');
-    insert into static.industry values ('HM','Computer Services','FN');
-    insert into static.industry values ('IA','Jewelry & Silverware','UT');
-    insert into static.industry values ('IL','Auto & Truck Manufacturers','SV');
-    insert into static.industry values ('IM','Waste Management Services','TC');
-    insert into static.industry values ('IP','Iron & Steel','TR');
-    insert into static.industry values ('IS','Airline','BM');
-    insert into static.industry values ('IV','Airline','SV');
-    insert into static.industry values ('JS','Photography','SV');
-    insert into static.industry values ('MC','Chemicals - Plastics & Rubber','HC');
-    insert into static.industry values ('MD','Containers & Packaging','FN');
-    insert into static.industry values ('ME','Constr. & Agric. Machinery','FN');
-    insert into static.industry values ('MF','Rental & Leasing','SV');
-    insert into static.industry values ('MG','Footwear','BM');
-    insert into static.industry values ('MH','Communications Services','TC');
-    insert into static.industry values ('MM','Retail (Drugs)','BM');
-    insert into static.industry values ('MP','Misc. Capital Goods','CC');
-    insert into static.industry values ('MS','Rental & Leasing','FN');
-    insert into static.industry values ('MT','Photography','BM');
-    insert into static.industry values ('NG','Biotechnology & Drugs','BM');
-    insert into static.industry values ('NM','Water Utilities','FN');
-    insert into static.industry values ('OE','Audio & Video Equipment','CN');
-    insert into static.industry values ('OI','Oil Well Services & Equipment','SV');
-    insert into static.industry values ('OO','Scientific & Technical Instr.','SV');
-    insert into static.industry values ('OS','Water Transportation','TR');
-    insert into static.industry values ('OW','Oil & Gas - Integrated','CN');
-    insert into static.industry values ('PA','Regional Banks','HC');
-    insert into static.industry values ('PG','Insurance (Miscellaneous)','BM');
-    insert into static.industry values ('PH','Paper & Paper Products','SV');
-    insert into static.industry values ('PP','Construction - Raw Materials','SV');
-    insert into static.industry values ('PR','Tobacco','EN');
-    insert into static.industry values ('PS','Beverages (Alcoholic)','HC');
-    insert into static.industry values ('RA','Containers & Packaging','FN');
-    insert into static.industry values ('RB','Jewelry & Silverware','CN');
-    insert into static.industry values ('RE','Motion Pictures','UT');
-    insert into static.industry values ('RL','Software & Programming','SV');
-    insert into static.industry values ('RM','Office Equipment','CG');
-    insert into static.industry values ('RN','Non-Metallic Mining','TC');
-    insert into static.industry values ('RP','Audio & Video Equipment','FN');
-    insert into static.industry values ('RR','Personal & Household Products','TR');
-    insert into static.industry values ('RS','Insurance (Life)','SV');
-    insert into static.industry values ('RT','Scientific & Technical Instr.','CC');
-    insert into static.industry values ('SB','Money Center Banks','BM');
-    insert into static.industry values ('SC','Broadcasting & Cable TV','FN');
-    insert into static.industry values ('SM','Personal & Household Products','CC');
-    insert into static.industry values ('SP','Recreational Products','EN');
-    insert into static.industry values ('SS','Motion Pictures','CC');
-    insert into static.industry values ('ST','Misc. Transportation','SV');
-    insert into static.industry values ('TH','Auto & Truck Parts','EN');
-    insert into static.industry values ('TI','Tires','HC');
-    insert into static.industry values ('TN','Software & Programming','CN');
-    insert into static.industry values ('TO','S&Ls/Savings Banks','SV');
-    insert into static.industry values ('TR','Misc. Capital Goods','BM');
-    insert into static.industry values ('WM','Insurance (Life)','CC');
-    insert into static.industry values ('WT','Retail (Speciality)','EN');
-    insert into static.industry values ('WU','Retail (Apparel)','CC');
+    create view bronze.security
+    as select * from brokerage_silver_package.shared_bronze.security;
 
-    grant all on all tables in schema static to application role app_public;
+    create view bronze.financial
+    as select * from brokerage_silver_package.shared_bronze.financial;
+
+-- share reference data
+create or alter versioned schema reference;
+
+    create or replace view reference.status_type
+    as select * from brokerage_silver_package.shared_reference.status_type;
+
+    create or replace view reference.industry
+    as select * from brokerage_silver_package.shared_reference.industry;
+
 
 -- asset schema
 create schema if not exists published;
@@ -176,11 +74,200 @@ create or alter versioned schema pipeline_code;
     $$
         begin
 
-            -- create the published tables
+            -- companies
+            create or replace table published.companies
+            as
+            select
+                cik as company_id,
+                st.st_name status,
+                company_name name,
+                ind.in_name industry,
+                ceo_name ceo,
+                address_line1,
+                address_line2,
+                postal_code,
+                city,
+                state_province,
+                country,
+                description,
+                founding_date,
+                sp_rating,
+                pts as effective_timestamp,
+                ifnull(
+                    timestampadd(
+                        'millisecond',
+                        -1,
+                        lag(pts) over (
+                            partition by company_id
+                            order by
+                            pts desc
+                        )
+                    ),
+                    to_timestamp('9999-12-31 23:59:59.999')
+                ) as end_timestamp,
+                CASE
+                    WHEN (
+                        row_number() over (
+                            partition by company_id
+                            order by
+                            pts desc
+                        ) = 1
+                    ) THEN TRUE
+                    ELSE FALSE
+                END as IS_CURRENT
+            from bronze.company cmp
+            join reference.status_type st on cmp.status = st.st_id
+            join reference.industry ind on cmp.industry_id = ind.in_id;
+
+            -- daily_market
             create or replace table published.daily_market
             as
-            SELECT *
-            FROM reference('daily_market');
+            with
+            s1 as (
+                select
+                    -- dm_date,
+                    min(dm_low) over (
+                        partition by dm_s_symb
+                        order by dm_date asc
+                        rows between 364 preceding and 0 following  -- CURRENT ROW
+                    ) fifty_two_week_low,
+                    max(dm_high) over (
+                        partition by dm_s_symb
+                        order by dm_date asc
+                        rows between 364 preceding and 0 following  -- CURRENT ROW
+                    ) fifty_two_week_high,
+                    *
+                from bronze.daily_market
+            ),
+            s2 as (
+                select a.*, 
+                    b.dm_date as fifty_two_week_low_date, 
+                    c.dm_date as fifty_two_week_high_date
+                from s1 a
+                join
+                    s1 b
+                    on a.dm_s_symb = b.dm_s_symb
+                    and a.fifty_two_week_low = b.dm_low
+                    and b.dm_date between add_months(a.dm_date, -12) and a.dm_date
+                join
+                    s1 c
+                    on a.dm_s_symb = c.dm_s_symb
+                    and a.fifty_two_week_high = c.dm_high
+                    and c.dm_date between add_months(a.dm_date, -12) and a.dm_date
+            )
+            select *
+            from s2
+            qualify
+                row_number() over (
+                    partition by dm_s_symb, dm_date
+                    order by fifty_two_week_low_date, fifty_two_week_high_date
+                ) = 1;
+
+            -- financials
+            create or replace table published.financials
+            as
+            with s1 as (
+                select
+                    YEAR,
+                    QUARTER,
+                    QUARTER_START_DATE,
+                    POSTING_DATE,
+                    REVENUE,
+                    EARNINGS,
+                    EPS,
+                    DILUTED_EPS,
+                    MARGIN,
+                    INVENTORY,
+                    ASSETS,
+                    LIABILITIES,
+                    SH_OUT,
+                    DILUTED_SH_OUT,
+                    coalesce(c1.name,c2.name) company_name,
+                    coalesce(c1.company_id, c2.company_id) company_id,
+                    pts as effective_timestamp
+                from bronze.financial s 
+                left join published.companies c1
+                on s.cik = c1.company_id
+                and pts between c1.effective_timestamp and c1.end_timestamp
+                left join published.companies c2
+                on s.company_name = c2.name
+                and pts between c2.effective_timestamp and c2.end_timestamp
+            )
+            select
+                *,
+                ifnull(
+                    timestampadd(
+                    'millisecond',
+                    -1,
+                    lag(effective_timestamp) over (
+                        partition by company_id
+                        order by
+                        effective_timestamp desc
+                    )
+                    ),
+                    to_timestamp('9999-12-31 23:59:59.999')
+                ) as end_timestamp,
+                CASE
+                    WHEN (
+                        row_number() over (
+                            partition by company_id
+                            order by
+                            effective_timestamp desc
+                        ) = 1
+                    ) THEN TRUE
+                    ELSE FALSE
+                END as IS_CURRENT
+            from s1;
+
+            -- securities
+            create or replace table published.securities
+            as
+            select
+                symbol,
+                issue_type,
+                case s.status
+                    when 'ACTV' then 'Active'
+                    when 'INAC' then 'Inactive'
+                    else null
+                end status,
+                s.name,
+                ex_id exchange_id,
+                sh_out shares_outstanding,
+                first_trade_date,
+                first_exchange_date,
+                dividend,
+                coalesce(c1.name,c2.name) company_name,
+                coalesce(c1.company_id, c2.company_id) company_id,
+                pts as effective_timestamp,
+                ifnull(
+                    timestampadd(
+                    'millisecond',
+                    -1,
+                    lag(pts) over (
+                        partition by symbol
+                        order by
+                        pts desc
+                    )
+                    ),
+                    to_timestamp('9999-12-31 23:59:59.999')
+                ) as end_timestamp,
+                CASE
+                    WHEN (
+                        row_number() over (
+                            partition by symbol
+                            order by
+                            pts desc
+                        ) = 1
+                    ) THEN TRUE
+                    ELSE FALSE
+                END as IS_CURRENT
+            from bronze.security s 
+            left join published.companies c1
+            on s.cik = c1.company_id
+            and pts between c1.effective_timestamp and c1.end_timestamp
+            left join published.companies c2
+            on s.company_name = c2.name
+            and pts between c2.effective_timestamp and c2.end_timestamp;
             
             -- grant to app role
             grant all on all tables in schema published to application role app_public;

@@ -1,5 +1,7 @@
-drop application brokerage_silver;
-DROP APPLICATION PACKAGE brokerage_silver_package;
+
+drop application if exists brokerage_silver;
+drop application package if exists brokerage_silver_package;
+
 CREATE APPLICATION PACKAGE brokerage_silver_package;
   
 show application packages;
@@ -20,28 +22,46 @@ PUT file:///Users/stewartbryson/Source/building-blocks-app/silver/README.md @bro
 GRANT REFERENCE_USAGE ON DATABASE brokerage
   TO SHARE IN APPLICATION PACKAGE brokerage_silver_package;
 
-create schema brokerage_silver_package.bronze;
+create schema brokerage_silver_package.shared_bronze;
 
-create view brokerage_silver_package.bronze.daily_market
-as select * from brokerage.bronze.daily_market;
+  create or replace view brokerage_silver_package.shared_bronze.daily_market
+  as select * from brokerage.bronze.daily_market;
 
-create view brokerage_silver_package.bronze.company
-as select * from brokerage.bronze.company;
+  create or replace view brokerage_silver_package.shared_bronze.company
+  as select * from brokerage.bronze.company;
 
-create view brokerage_silver_package.bronze.security
-as select * from brokerage.bronze.security;
+  create or replace view brokerage_silver_package.shared_bronze.security
+  as select * from brokerage.bronze.security;
 
-create view brokerage_silver_package.bronze.financial
-as select * from brokerage.bronze.financial;
+  create or replace view brokerage_silver_package.shared_bronze.financial
+  as select * from brokerage.bronze.financial;
 
-grant usage on schema brokerage_silver_package.bronze
-to share in application package brokerage_silver_package;
+  grant usage on schema brokerage_silver_package.shared_bronze
+  to share in application package brokerage_silver_package;
 
-grant select on all views in schema brokerage_silver_package.bronze
-to share in application package brokerage_silver_package;
+  grant select on all views in schema brokerage_silver_package.shared_bronze
+  to share in application package brokerage_silver_package;
+
+-- share reference data
+create schema if not exists brokerage_silver_package.shared_reference;
+
+  create or replace view brokerage_silver_package.shared_reference.status_type
+  as select * from brokerage.reference.status_type;
+
+  create or replace view brokerage_silver_package.shared_reference.industry
+  as select * from brokerage.reference.industry;
+
+  grant usage on schema brokerage_silver_package.shared_reference
+  to share in application package brokerage_silver_package;
+
+  grant select on all views in schema brokerage_silver_package.shared_reference
+  to share in application package brokerage_silver_package;
+
+drop application if exists brokerage_silver;
 
 CREATE APPLICATION BROKERAGE_SILVER
   FROM APPLICATION PACKAGE BROKERAGE_SILVER_PACKAGE
   USING '@brokerage_silver_package.stage_content.package_content';
 
+-- wrap a scheduled task around this procedure
 call brokerage_silver.pipeline_code.run_pipeline();

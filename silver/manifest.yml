@@ -14,13 +14,3 @@ configuration:
   log_level: debug
   trace_level: always
 
-references:
-  - daily_market:
-      label: "Daily market snapshot."
-      description: "Daily market snapshot."
-      privileges:
-        - SELECT
-        - REFERENCES
-      object_type: TABLE
-      multi_valued: false
-      register_callback: config_code.register_single_callback
