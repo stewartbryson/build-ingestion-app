@@ -75,41 +75,11 @@ create or alter versioned schema pipeline_code;
         begin
             copy into staged.finwire from @staged.finwire;
             copy into published.daily_market from @published.daily_market;
+            return 'Files ingested.';
         end;
     $$
     ;
     grant usage on procedure pipeline_code.ingest_files()
-    to application role app_public;
-
-    -- stored procedure to create a task that copies file data
-    -- task creation must be deferred to after app install because
-    -- it depends on a privilege being granted by the user via the UI
-    create or replace procedure pipeline_code.create_ingestion_task()
-    returns varchar
-    language sql
-    as
-    $$
-        begin
-            system$log_info('creating task pipeline_code.ingest_files...');
-            create or replace task staged.ingest_files
-              warehouse = reference('pipeline_warehouse')
-              schedule = '60 minute'
-            as
-            call pipeline_code.ingest_files();
-            ;
-            grant operate on task staged.ingest_files
-            to application role app_public;
-            alter task staged.ingest_files resume;
-            return 'Task created.';
-        exception
-            when other then
-                system$log_error('create_ingestion_task(): ' || sqlerrm);
-                raise;
-        end;
-    $$
-    ;
-
-    grant usage on procedure pipeline_code.create_ingestion_task()
     to application role app_public;
 
     create or replace procedure pipeline_code.run_pipeline()
@@ -145,7 +115,7 @@ create or alter versioned schema pipeline_code;
                 substring("LINE", 324, 24) AS "COUNTRY",
                 substring("LINE", 348, 46) AS "CEO_NAME",
                 substring("LINE", 394, 150) AS "DESCRIPTION"
-            FROM finwire_shared
+            FROM staged.finwire_shared
             WHERE ("REC_TYPE" = 'CMP');
 
             CREATE OR REPLACE TABLE published.security AS
@@ -160,7 +130,7 @@ create or alter versioned schema pipeline_code;
                 substring("LINE", 141, 8) AS "FIRST_EXCHANGE_DATE",
                 substring("LINE", 149, 12) AS "DIVIDEND",
                 substring("LINE", 161, 60) AS "CO_NAME_OR_CIK"
-            FROM finwire_shared
+            FROM staged.finwire_shared
             WHERE ("REC_TYPE" = 'SEC');
 
             CREATE OR REPLACE TABLE published.financial AS
@@ -180,11 +150,13 @@ create or alter versioned schema pipeline_code;
                 substring("LINE", 161, 13) AS "SH_OUT",
                 substring("LINE", 174, 13) AS "DILUTED_SH_OUT",
                 substring("LINE", 187, 60) AS "CO_NAME_OR_CIK"
-            FROM finwire
-            WHERE ("REC_TYPE" = 'FIN')
+            FROM staged.finwire_shared
+            WHERE ("REC_TYPE" = 'FIN');
             
             -- grant to app role
             grant all on all tables in schema staged to application role app_public;
+            grant all on all tables in schema published to application role app_public;
+            return 'Pipeline successfully executed.';
         end;
     $$
     ;
