@@ -65,3 +65,20 @@ CREATE APPLICATION BROKERAGE_SILVER
 
 -- wrap a scheduled task around this procedure
 call brokerage_silver.pipeline_code.run_pipeline();
+
+-- create external views from the application
+use database brokerage;
+
+create schema if not exists brokerage.silver;
+
+create or replace view brokerage.silver.daily_market
+as select * from brokerage_silver.published.daily_market;
+
+create or replace view brokerage.silver.companies
+as select * from brokerage_silver.published.companies;
+
+create or replace view brokerage.silver.securities
+as select * from brokerage_silver.published.securities;
+
+create or replace view brokerage.silver.financials
+as select * from brokerage_silver.published.financials;
