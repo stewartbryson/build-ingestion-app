@@ -23,3 +23,19 @@ PUT file:///Users/stewartbryson/dev/app-files/daily_market/* @brokerage_bronze.p
 PUT file:///Users/stewartbryson/dev/app-files/finwire/* @brokerage_bronze.staged.finwire auto_compress=true;
 call brokerage_bronze.pipeline_code.ingest_files();
 call brokerage_bronze.pipeline_code.run_pipeline();
+
+-- create external views from the application
+create database brokerage;
+create schema brokerage.bronze;
+
+create view brokerage.bronze.daily_market
+as select * from brokerage_bronze.published.daily_market;
+
+create view brokerage.bronze.company
+as select * from brokerage_bronze.published.company;
+
+create view brokerage.bronze.security
+as select * from brokerage_bronze.published.security;
+
+create view brokerage.bronze.financial
+as select * from brokerage_bronze.published.financial;

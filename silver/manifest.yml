@@ -1,0 +1,26 @@
+manifest_version: 1 # required
+version:
+  name: brokerage_silver
+  label: "v1.0"
+  comment: "Our silver layer."
+
+artifacts:
+  readme: README.md
+  setup_script: scripts/setup.sql
+  # default_streamlit: streamlit/ux_schema.homepage_streamlit
+  extension_code: true
+
+configuration:
+  log_level: debug
+  trace_level: always
+
+references:
+  - daily_market:
+      label: "Daily market snapshot."
+      description: "Daily market snapshot."
+      privileges:
+        - SELECT
+        - REFERENCES
+      object_type: TABLE
+      multi_valued: false
+      register_callback: config_code.register_single_callback
