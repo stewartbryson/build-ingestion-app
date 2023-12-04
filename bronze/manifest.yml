@@ -1,0 +1,29 @@
+manifest_version: 1 # required
+version:
+  name: brokerage_bronze
+  label: "v1.0"
+  comment: "The first version of a Snowflake Native App"
+
+artifacts:
+  readme: README.md
+  setup_script: scripts/setup.sql
+  # default_streamlit: streamlit/ux_schema.homepage_streamlit
+  extension_code: true
+
+configuration:
+  log_level: debug
+  trace_level: always
+
+privileges:
+  - EXECUTE TASK:
+      description: "Run ingestion tasks from file feeds."
+
+references:
+  - pipeline_warehouse:
+      label: "Warehouse to use for data pipelines."
+      description: "Warehouse to use for data pipelines."
+      privileges:
+        - USAGE
+      object_type: WAREHOUSE
+      multi_valued: false
+      register_callback: config_code.register_single_callback
