@@ -15,6 +15,7 @@ CREATE OR REPLACE STAGE brokerage_gold_package.stage_content.package_content
 
 PUT file:///Users/stewartbryson/Source/building-blocks-app/gold/manifest.yml @brokerage_gold_package.stage_content.package_content overwrite=true auto_compress=false;
 PUT file:///Users/stewartbryson/Source/building-blocks-app/gold/scripts/setup.sql @brokerage_gold_package.stage_content.package_content/scripts overwrite=true auto_compress=false;
+PUT file:///Users/stewartbryson/Source/building-blocks-app/gold/streamlit/exchange_analytics.py @brokerage_gold_package.stage_content.package_content/streamlit overwrite=true auto_compress=false;
 PUT file:///Users/stewartbryson/Source/building-blocks-app/gold/README.md @brokerage_gold_package.stage_content.package_content overwrite=true auto_compress=false;
 
 -- share other layers to the application
@@ -62,3 +63,9 @@ as select * from brokerage_gold.published.dim_security;
 
 create or replace view brokerage.gold.fact_market_history
 as select * from brokerage_gold.published.fact_market_history;
+
+create or replace view brokerage.gold.rep_exchange
+as select * from brokerage_gold.published.rep_exchange;
+
+create or replace view brokerage.gold.rep_sp_rating
+as select * from brokerage_gold.published.rep_sp_rating;

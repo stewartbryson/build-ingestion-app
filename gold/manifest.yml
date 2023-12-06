@@ -7,7 +7,7 @@ version:
 artifacts:
   readme: README.md
   setup_script: scripts/setup.sql
-  # default_streamlit: streamlit/ux_schema.homepage_streamlit
+  #default_streamlit: streamlit/ui.exchange_analytics
   extension_code: true
 
 configuration:

@@ -147,6 +147,42 @@ create or alter versioned schema pipeline_code;
                 AND dmh.dm_date between s.effective_timestamp and s.end_timestamp
             LEFT JOIN s1 f
             USING (sk_company_id);
+
+            -- report
+            create or replace table published.rep_exchange
+            as
+            select
+                *,
+                rank() over (order by fifty_two_week_high_avg desc) fifty_two_week_high_rank,
+                rank() over (order by fifty_two_week_low_avg) fifty_two_week_low_rank
+            from
+            (select distinct 
+                exchange_id,
+                avg(fifty_two_week_high) as fifty_two_week_high_avg,
+                avg(fifty_two_week_low) as fifty_two_week_low_avg,
+                avg(shares_outstanding) as shares_outstanding_avg
+            from published.fact_market_history
+            join published.dim_company using (sk_company_id)
+            join published.dim_security using (sk_security_id)
+            group by all);
+
+            -- report
+            create or replace table published.rep_sp_rating
+            as
+            select
+                *,
+                rank() over (order by fifty_two_week_high_avg desc) fifty_two_week_high_rank,
+                rank() over (order by fifty_two_week_low_avg) fifty_two_week_low_rank
+            from
+            (select distinct 
+                sp_rating,
+                avg(fifty_two_week_high) as fifty_two_week_high_avg,
+                avg(fifty_two_week_low) as fifty_two_week_low_avg,
+                avg(shares_outstanding) as shares_outstanding_avg
+            from published.fact_market_history
+            join published.dim_company using (sk_company_id)
+            join published.dim_security using (sk_security_id)
+            group by all);
             
             -- grant to app role
             grant all on all tables in schema published to application role app_public;
@@ -157,4 +193,12 @@ create or alter versioned schema pipeline_code;
     grant usage on procedure pipeline_code.run_pipeline()
     to application role app_public;
 
- 
+create or alter versioned schema ui;
+
+    CREATE STREAMLIT ui.exchange_analytics
+    FROM '/streamlit'
+    MAIN_FILE = '/exchange_analytics.py'
+    ;
+
+    grant usage on schema ui to application role app_public;
+    GRANT USAGE ON STREAMLIT ui.exchange_analytics TO APPLICATION ROLE app_public;
